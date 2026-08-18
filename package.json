@@ -11,7 +11,7 @@
     "demo": "tsx demo/run-demo.ts",
     "cli": "tsx src/cli.ts",
     "server": "tsx src/server.ts",
-    "start": "node dist/server.js"
+    "start": "node dist/src/server.js"
   },
   "keywords": [
     "agent",
