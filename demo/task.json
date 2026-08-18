@@ -1,0 +1,20 @@
+{
+  "taskId": "task-hackathon-01",
+  "intent": "Fix broken discount calculation in src/cart.ts so VIP users get 10% discount",
+  "allowedPaths": [
+    "src/cart.ts",
+    "tests/cart.test.ts"
+  ],
+  "forbiddenPaths": [
+    ".env*",
+    "secrets/**",
+    "config/credentials.json"
+  ],
+  "allowNetwork": false,
+  "allowedCommands": [
+    "vitest",
+    "npm test"
+  ],
+  "verifyCommand": "npx vitest run tests/cart.test.ts",
+  "maxIterations": 8
+}
