@@ -7,15 +7,13 @@ import { runVerification } from './verifier.js';
 import { renderMarkdownCard } from './cardRenderer.js';
 import type { TaskEnvelope, EvidenceCard } from './types.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const rootDir = path.resolve(__dirname, '..');
-const publicDir = path.join(rootDir, 'public');
+const rootDir = process.cwd();
+const publicDir = path.resolve(rootDir, 'public');
 
 let latestEvidenceCard: EvidenceCard | null = null;
 
 // Initial state evidence card
-const sampleRepoPath = path.join(rootDir, 'demo/sample-repo');
+const sampleRepoPath = path.resolve(rootDir, 'demo/sample-repo');
 
 export function createServer() {
   return http.createServer(async (req, res) => {
