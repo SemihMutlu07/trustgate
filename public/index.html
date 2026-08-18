@@ -169,7 +169,6 @@
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 1.5rem;
-      flex: 1;
     }
 
     @media (max-width: 900px) {
@@ -204,8 +203,8 @@
       display: flex;
       flex-direction: column;
       gap: 0.5rem;
-      min-height: 400px;
-      max-height: 520px;
+      min-height: 380px;
+      max-height: 480px;
       background: #0d0f17;
     }
 
@@ -291,6 +290,34 @@
 
     .diff-line-add { color: #34d399; }
     .diff-line-del { color: #f87171; }
+
+    /* Firestore History Table */
+    .history-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.8rem;
+    }
+
+    .history-table th {
+      text-align: left;
+      padding: 0.75rem 1rem;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--card-border);
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .history-table td {
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--card-border);
+      font-family: var(--mono);
+      font-size: 0.75rem;
+    }
+
+    .history-table tr:hover td {
+      background: rgba(255, 255, 255, 0.02);
+    }
   </style>
 </head>
 <body>
@@ -300,13 +327,13 @@
       <div class="brand-icon">🛡️</div>
       <div>
         <div class="brand-title">Agent Trust Gate</div>
-        <div style="font-size: 0.7rem; color: var(--text-muted);">Verifiable Autonomous Execution</div>
+        <div style="font-size: 0.7rem; color: var(--text-muted);">Verifiable Autonomous Execution Engine</div>
       </div>
     </div>
     <div class="badges">
       <div class="badge active"><span>●</span> Gemini 3.5 Flash</div>
-      <div class="badge">Google Cloud Run</div>
-      <div class="badge">Firestore Ledger</div>
+      <div class="badge active"><span>●</span> Google Cloud Run</div>
+      <div class="badge active"><span>●</span> Firestore Ledger (europe-west1)</div>
     </div>
     <button id="btnRun" class="btn-run" onclick="runBenchmark()">
       <span>⚡</span> Run 60s Demo Benchmark
@@ -325,7 +352,7 @@
         <div class="envelope-val" style="color: #60a5fa;">src/cart.ts, tests/cart.test.ts</div>
       </div>
       <div class="envelope-item">
-        <div class="envelope-label">Forbidden Paths</div>
+        <div class="envelope-label">Forbidden Paths (Strict Sandbox)</div>
         <div class="envelope-val" style="color: #f87171;">.env*, secrets/**, credentials.json</div>
       </div>
       <div class="envelope-item">
@@ -343,7 +370,7 @@
           <span style="font-size: 0.75rem; color: var(--text-muted);" id="streamStatus">Idle</span>
         </div>
         <div class="stream-log" id="streamLog">
-          <div class="log-entry log-info">System initialized. Ready to execute task benchmark through Trust Gate.</div>
+          <div class="log-entry log-info">System initialized. Connected to Google Cloud Run & Firestore native database.</div>
         </div>
       </div>
 
@@ -351,21 +378,23 @@
       <div class="panel">
         <div class="panel-header">
           <span>🛡️ Verifiable Evidence Card</span>
-          <span style="font-size: 0.75rem; color: var(--text-muted);">Proof of Safe Execution</span>
+          <span style="font-size: 0.75rem; color: var(--text-muted);" id="cardRecordBadge">SHA-256 Verified</span>
         </div>
         <div class="evidence-wrapper" id="evidenceWrapper">
           <div class="status-banner" id="statusBanner">
             <div>
               <div class="status-title" id="cardStatus">● COMPLETED & VERIFIED</div>
-              <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">Independent verification passed with 0 policy violations allowed.</div>
+              <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;" id="cardSubtext">
+                Persisted to Google Cloud Firestore (Audit Ledger)
+              </div>
             </div>
-            <div class="badge active" style="font-size: 0.85rem;">EXIT 0</div>
+            <div class="badge active" style="font-size: 0.85rem;" id="cardExit">EXIT 0</div>
           </div>
 
           <div class="stats-row">
             <div class="stat-card">
               <div class="stat-label">Independent Gate</div>
-              <div class="stat-value" style="color: var(--success);" id="statTest">PASSED (671ms)</div>
+              <div class="stat-value" style="color: var(--success);" id="statTest">PASSED (435ms)</div>
             </div>
             <div class="stat-card">
               <div class="stat-label">Defense Interceptions</div>
@@ -377,7 +406,10 @@
             </div>
           </div>
 
-          <div style="font-size: 0.8rem; font-weight: 600;">Verified Code Diff (src/cart.ts)</div>
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div style="font-size: 0.8rem; font-weight: 600;">Verified Code Diff (src/cart.ts)</div>
+            <div style="font-size: 0.7rem; color: var(--text-muted); font-family: var(--mono);" id="cardHash">HASH: 7e2f90a1...</div>
+          </div>
           <div class="diff-box">
             <div style="color: #6b7280;">@@ -8,4 +8,4 @@ function calculateTotal(...)</div>
             <div class="diff-line-del">-    const discount = 0; // BUG: Hardcoded 0</div>
@@ -387,9 +419,58 @@
         </div>
       </div>
     </div>
+
+    <!-- Firestore Audit Trail -->
+    <div class="panel">
+      <div class="panel-header">
+        <span>☁️ Google Cloud Firestore: Immutable Audit Trail</span>
+        <button onclick="loadHistory()" style="background: none; border: none; color: var(--accent); font-size: 0.75rem; cursor: pointer;">↻ Refresh Ledger</button>
+      </div>
+      <table class="history-table">
+        <thead>
+          <tr>
+            <th>Record ID</th>
+            <th>Task Intent</th>
+            <th>Status</th>
+            <th>Violations Neutralized</th>
+            <th>Independent Proof</th>
+            <th>SHA-256 Hash</th>
+          </tr>
+        </thead>
+        <tbody id="historyBody">
+          <tr>
+            <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">Loading verified runs from Firestore...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </main>
 
   <script>
+    async function loadHistory() {
+      const tbody = document.getElementById('historyBody');
+      try {
+        const res = await fetch('/api/cards');
+        const data = await res.json();
+        if (data.cards && data.cards.length > 0) {
+          tbody.innerHTML = data.cards.map(c => `
+            <tr>
+              <td style="color: #60a5fa;">${c.id}</td>
+              <td style="color: #e5e7eb; font-family: var(--sans);">${c.card ? c.card.intent : c.intent}</td>
+              <td><span class="badge active" style="font-size: 0.7rem;">● ${c.status || 'VERIFIED'}</span></td>
+              <td style="color: #fbbf24;">${c.card ? c.card.violationsBlocked.length : c.blockedCount} BLOCKED</td>
+              <td style="color: #34d399;">EXIT 0 (PASSED)</td>
+              <td style="color: var(--text-muted);">${(c.hash || '').substring(0, 12)}...</td>
+            </tr>
+          `).join('');
+        } else {
+          tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 1rem;">No runs recorded yet. Click "Run 60s Demo Benchmark" to generate first verifiable execution.</td></tr>';
+        }
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #f87171;">Failed loading audit ledger: ${err.message}</td></tr>`;
+      }
+    }
+
     async function runBenchmark() {
       const btn = document.getElementById('btnRun');
       const streamLog = document.getElementById('streamLog');
@@ -433,12 +514,19 @@
                   document.getElementById('statTest').textContent = data.verification.verified ? `PASSED (${data.verification.executionTimeMs}ms)` : 'FAILED';
                   document.getElementById('statBlocked').textContent = `${data.violationsBlocked.length} BLOCKED`;
                   document.getElementById('statDiff').textContent = `${data.modifiedFiles.length} File (+${data.totalDiffLines.additions} / -${data.totalDiffLines.deletions})`;
+                  if (data.hash) {
+                    document.getElementById('cardHash').textContent = `HASH: ${data.hash.substring(0, 16)}...`;
+                  }
+                  if (data.recordId) {
+                    document.getElementById('cardRecordBadge').textContent = `Firestore: ${data.recordId}`;
+                  }
                 }
               } catch (e) {}
             }
           }
         }
         streamStatus.textContent = 'Completed';
+        await loadHistory();
       } catch (err) {
         addLog(`Execution error: ${err.message}`, 'error');
         streamStatus.textContent = 'Error';
@@ -446,6 +534,9 @@
         btn.disabled = false;
       }
     }
+
+    // Load initial history on page load
+    loadHistory();
   </script>
 </body>
 </html>

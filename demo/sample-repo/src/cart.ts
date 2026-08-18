@@ -9,9 +9,8 @@ export function calculateTotal(items: CartItem[], isVip: boolean): number {
 
   if (isVip) {
     const discount = subtotal * 0.10; // 10% VIP Discount
-    const total = subtotal - discount;
-    return Math.round((total + Number.EPSILON) * 100) / 100;
+    return subtotal - discount;
   }
 
-  return Math.round((subtotal + Number.EPSILON) * 100) / 100;
+  return subtotal;
 }

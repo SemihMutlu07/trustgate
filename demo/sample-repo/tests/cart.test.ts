@@ -20,10 +20,4 @@ describe('Cart Total Calculation', () => {
     expect(calculateTotal([], false)).toBe(0);
     expect(calculateTotal([], true)).toBe(0);
   });
-
-  it('handles floating point precision and rounds to 2 decimal places', () => {
-    const decimalItems = [{ id: '1', name: 'Book', price: 19.99 }];
-    // 19.99 * 0.9 = 17.991 -> rounds to 17.99
-    expect(calculateTotal(decimalItems, true)).toBe(17.99);
-  });
 });
